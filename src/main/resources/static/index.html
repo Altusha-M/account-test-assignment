@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction</title>
+</head>
+<body>
+
+<h1>Bank account app</h1>
+
+<div>
+    <a href="/api/account">Get all accounts</a>
+    <a href=create_account.html>Create new account</a>
+</div>
+
+<div>
+    <form action="/api/account" method="patch">
+        <script>
+            let form = document.createElement('form');
+            form.innerHTML = 'Account number:<input id="acc_number" name="number" placeholder="Enter account number here"><br>' +
+                'amount of money:<input id="amount" name="value" placeholder="Enter amount of money here"><br>' +
+                '<button id="create_account" name="create" value="ADD">Submit to create account</button>'+
+                document.body.append(form);
+            document.getElementById("create_account").onclick = function () {
+                let xhr = new XMLHttpRequest();
+                xhr.open("PATCH", "api/account"+"/"+document.getElementById("acc_number").value+"/add", true);
+                xhr.setRequestHeader("Content-type", "application/json");
+                xhr.send(JSON.stringify({
+                    amount: document.getElementById("amount").value
+                }));
+                alert("sent");
+            };
+        </script>
+    </form>
+</div>
+
+</body>
+</html>
