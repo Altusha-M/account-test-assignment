@@ -8,15 +8,15 @@ import java.math.BigDecimal;
 public class Account {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.AUTO,
-//                    generator = "pk_account_sequence")
-//    @SequenceGenerator(name = "pk_account_sequence",
-//                        sequenceName = "account_id_seq",
-//                        allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO,
+                    generator = "pk_account_sequence")
+    @SequenceGenerator(name = "pk_account_sequence",
+                        sequenceName = "account_id_seq",
+                        allocationSize = 1)
     private Long id;
+//    @GeneratedValue(strategy = GenerationType.AUTO)
 
-    @Column(name = "account_number", nullable = false)
+    @Column(nullable = false)
     private String accountNumber;
 
     @Column(nullable = false)

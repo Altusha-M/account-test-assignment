@@ -7,13 +7,15 @@ import java.util.Optional;
 
 public interface AccountService {
 
-    void credit(String accountNumber, Long amountToAdd);
+    Long credit(String accountNumber, Long amountToAdd);
 
-    void debit(String accountNumber, Long amountTo);
+    Long debit(String accountNumber, Long amountTo);
 
     Optional<Account> findById(Long id);
 
     List<Account> findAll();
 
     Optional<Account> findAccountByAccountNumber(Long number);
+
+    Account save(Account account);
 }
