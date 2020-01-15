@@ -1,27 +1,25 @@
 package my.test.accounttestassignment.service;
 
 import my.test.accounttestassignment.entity.Account;
-import my.test.accounttestassignment.entity.OperationJournal;
 import my.test.accounttestassignment.exception.NotEnoughMoneyException;
 import my.test.accounttestassignment.repository.AccountRepository;
-import my.test.accounttestassignment.repository.OperationJournalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+@Service("accountService")
 public class AccountServiceImpl implements AccountService {
 
     AccountRepository accountRepository;
-    OperationJournalRepository operationJournalRepository;
+    OperationService operationService;
 
     @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository, OperationJournalRepository operationJournalRepository) {
+    public AccountServiceImpl(AccountRepository accountRepository, OperationService operationService) {
         this.accountRepository = accountRepository;
-        this.operationJournalRepository = operationJournalRepository;
+        this.operationService = operationService;
     }
 
     /**
@@ -36,7 +34,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public Long credit(String accountNumber, Long amountToAdd) {
-
         Optional<Account> optionalAccount = accountRepository.findByAccountNumber(accountNumber);
         boolean accountPresent = optionalAccount.isPresent();
         if (!accountPresent) {
@@ -45,6 +42,7 @@ public class AccountServiceImpl implements AccountService {
             Account account = optionalAccount.get();
             Long newAmount = account.getAmount() + amountToAdd;
             accountRepository.updateAccountAmountByNumber(accountNumber, newAmount);
+            operationService.save("credit", account, amountToAdd);
             return newAmount;
         }
     }
@@ -61,21 +59,27 @@ public class AccountServiceImpl implements AccountService {
      *          if there is no enough money on given account
      */
     @Override
+    @Transactional
     public Long debit(String accountNumber, Long amountToRemove) {
 
         Optional<Account> optionalAccount = accountRepository.findByAccountNumber(accountNumber);
         boolean accountPresent = optionalAccount.isPresent();
+
         if (!accountPresent) {
             return -1L;
         } else {
             Account account = optionalAccount.get();
-            if (account.getAmount() < amountToRemove) {
+            Long oldAmount = account.getAmount();
+            if (oldAmount < amountToRemove) {
                 throw new NotEnoughMoneyException("add more money before remove");
             }
-            Long newAmount = account.getAmount() - amountToRemove;
+            Long newAmount = oldAmount - amountToRemove;
+
             accountRepository.updateAccountAmountByNumber(accountNumber, newAmount);
+            operationService.save("debit", account, amountToRemove);
             return newAmount;
         }
+
     }
 
     @Override
@@ -89,10 +93,11 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<Account> findAccountByAccountNumber(Long number) {
+    public Optional<Account> findAccountByAccountNumber(String number) {
         return accountRepository.findByAccountNumber(number.toString());
     }
 
+    @Override
     public Account save(Account account){
         return accountRepository.save(account);
     }

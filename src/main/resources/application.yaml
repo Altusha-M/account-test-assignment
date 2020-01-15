@@ -4,11 +4,10 @@ spring:
     username: postgres
     password: postgres
     platform: postgres
-    initialization-mode: always
+    initialization-mode: never
     driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
-    generate-ddl: true

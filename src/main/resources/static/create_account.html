@@ -14,8 +14,8 @@
             let form = document.createElement('form');
             form.innerHTML = 'Account number:<input id="acc_number" name="number" placeholder="Enter account number here"><br>' +
                 'amount of money:<input id="amount" name="value" placeholder="Enter amount of money here"><br>' +
-                '<button id="create_account" name="create" value="ADD">Submit to create account</button>'+
-                document.body.append(form);
+                '<button id="create_account" name="create" value="ADD">Submit to create account</button>';
+            document.body.append(form);
             document.getElementById("create_account").onclick = function () {
                 let xhr = new XMLHttpRequest();
                 xhr.open("POST", "api/account", true);
