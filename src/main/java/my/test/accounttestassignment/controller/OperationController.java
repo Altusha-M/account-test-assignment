@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/operation")
 public class OperationController {
 
-    OperationService operationService;
+    private final OperationService operationService;
 
     @Autowired
     public OperationController(OperationService operationService) {

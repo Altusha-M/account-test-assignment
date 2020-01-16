@@ -1,7 +1,7 @@
 package my.test.accounttestassignment.entity;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @Table(name = "account")
@@ -16,7 +16,7 @@ public class Account {
     private Long id;
 //    @GeneratedValue(strategy = GenerationType.AUTO)
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String accountNumber;
 
     @Column(nullable = false)
@@ -45,6 +45,12 @@ public class Account {
     public Account() {
     }
 
+    public Account(Long id, String accountNumber, Long amount) {
+        this.id = id;
+        this.accountNumber = accountNumber;
+        this.amount = amount;
+    }
+
     @Override
     public String toString() {
         return "Account{" +
@@ -52,5 +58,20 @@ public class Account {
                 ", accountNumber='" + accountNumber + '\'' +
                 ", amount=" + amount +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Account account = (Account) o;
+        return Objects.equals(id, account.id) &&
+                Objects.equals(accountNumber, account.accountNumber) &&
+                Objects.equals(amount, account.amount);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, accountNumber, amount);
     }
 }

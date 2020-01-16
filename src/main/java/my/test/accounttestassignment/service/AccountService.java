@@ -2,7 +2,6 @@ package my.test.accounttestassignment.service;
 
 import my.test.accounttestassignment.entity.Account;
 import my.test.accounttestassignment.exception.NotEnoughMoneyException;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +19,6 @@ public interface AccountService {
 
     Optional<Account> findAccountByAccountNumber(String number);
 
-    Account save(Account account);
+    Optional<Account> save(Account account);
 
 }

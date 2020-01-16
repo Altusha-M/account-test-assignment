@@ -13,7 +13,7 @@ import java.util.List;
 @Service("operationService")
 public class OperationServiceImpl implements OperationService {
 
-    OperationRepository operationRepository;
+    private final OperationRepository operationRepository;
 
     @Autowired
     public OperationServiceImpl(OperationRepository operationRepository) {

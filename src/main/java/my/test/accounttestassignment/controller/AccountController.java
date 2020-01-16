@@ -16,8 +16,8 @@ import java.util.Optional;
 @RequestMapping("/api/account")
 public class AccountController {
 
-    AccountService accountService;
-    OperationService operationService;
+    private final AccountService accountService;
+    private final OperationService operationService;
 
     @Autowired
     public AccountController(AccountService accountService, OperationService operationService) {
@@ -37,15 +37,24 @@ public class AccountController {
     public ResponseEntity<Account> getAccount(@PathVariable String number) {
         Optional<Account> accountServiceById = accountService.findAccountByAccountNumber(number);
         boolean present = accountServiceById.isPresent();
-        return new ResponseEntity<Account>(present ?
-                accountServiceById.get() : new Account(),
+        return new ResponseEntity<Account>(
+                present ? accountServiceById.get() : new Account(),
                 present ? HttpStatus.OK : HttpStatus.NOT_FOUND
         );
     }
 
+    /**
+     *
+     * @param newAccount
+     * @return
+     */
     @PostMapping
     public ResponseEntity<Account> createAccount(@RequestBody Account newAccount) {
-        return new ResponseEntity<>(accountService.save(newAccount), HttpStatus.CREATED);
+        Optional<Account> savedAccount = accountService.save(newAccount);
+        boolean present = savedAccount.isPresent();
+        return new ResponseEntity<>(
+                present ? savedAccount.get() : new Account(),
+                present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
     }
 
     @PatchMapping("/{accountNumber}/credit/{amountToAdd}")

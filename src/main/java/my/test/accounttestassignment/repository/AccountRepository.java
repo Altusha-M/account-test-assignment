@@ -17,5 +17,5 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Account a SET a.amount = :newAmount WHERE a.accountNumber = :accountNumber")
     void updateAccountAmountByNumber(@Param("accountNumber") String accountNumber, @Param("newAmount") Long newAmount);
-    
+
 }

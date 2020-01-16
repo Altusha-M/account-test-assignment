@@ -13,8 +13,8 @@ import java.util.Optional;
 @Service("accountService")
 public class AccountServiceImpl implements AccountService {
 
-    AccountRepository accountRepository;
-    OperationService operationService;
+    private final AccountRepository accountRepository;
+    private final OperationService operationService;
 
     @Autowired
     public AccountServiceImpl(AccountRepository accountRepository, OperationService operationService) {
@@ -24,18 +24,18 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Make cash in operation for account with given number.
-     * @param accountNumber
-     *          number of account which will deposit money
-     * @param amountToAdd
-     *          amount of money added to the {@code accountNumber}
-     * @return
-     *          Long amount of money after addition or -1L if there is no account with {@code accountNumber}
+     *
+     * @param accountNumber number of account which will deposit money
+     * @param amountToAdd   amount of money added to the {@code accountNumber}
+     * @return Long amount of money after addition or -1L if there is no account with {@code accountNumber}
      */
     @Override
     @Transactional
     public Long credit(String accountNumber, Long amountToAdd) {
+
         Optional<Account> optionalAccount = accountRepository.findByAccountNumber(accountNumber);
         boolean accountPresent = optionalAccount.isPresent();
+
         if (!accountPresent) {
             return -1L;
         } else {
@@ -49,14 +49,11 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Make charge off operation for account with given number.
-     * @param accountNumber
-     *          number of account which will withdraw money
-     * @param amountToRemove
-     *          amount of money added to the {@code accountNumber}
-     * @return
-     *          Long amount of money after removing or -1L if there is no account with {@code accountNumber}
-     * @throws NotEnoughMoneyException
-     *          if there is no enough money on given account
+     *
+     * @param accountNumber  number of account which will withdraw money
+     * @param amountToRemove amount of money added to the {@code accountNumber}
+     * @return Long amount of money after removing or -1L if there is no account with {@code accountNumber}
+     * @throws NotEnoughMoneyException if there is no enough money on given account
      */
     @Override
     @Transactional
@@ -79,7 +76,6 @@ public class AccountServiceImpl implements AccountService {
             operationService.save("debit", account, amountToRemove);
             return newAmount;
         }
-
     }
 
     @Override
@@ -94,12 +90,26 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<Account> findAccountByAccountNumber(String number) {
-        return accountRepository.findByAccountNumber(number.toString());
+        return accountRepository.findByAccountNumber(number);
     }
 
+    /**
+     * creates account in DB
+     * @param account account which wanted to be create
+     * @return created account or empty account if account with accountNumber already exists
+     */
     @Override
-    public Account save(Account account){
-        return accountRepository.save(account);
+    @Transactional
+    public Optional<Account> save(Account account) {
+        if (accountRepository.findByAccountNumber(account.getAccountNumber()).isPresent() ){
+            return Optional.of(new Account());
+        }
+        Long amountToCredit = account.getAmount();
+        account.setAmount(0L);
+        accountRepository.save(account);
+        this.credit(account.getAccountNumber(), amountToCredit);
+        return accountRepository.findByAccountNumber(account.getAccountNumber());
     }
+
 
 }
