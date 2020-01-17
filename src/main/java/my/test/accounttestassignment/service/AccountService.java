@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface AccountService {
 
-    Long credit(String accountNumber, Long amountToAdd);
+    Optional<Account> credit(Account accountToCredit, Long amountToAdd);
 
-    Long debit(String accountNumber, Long amountTo) throws NotEnoughMoneyException;
+    Optional<Account> debit(Account accountToDebit, Long amountToRemove) throws NotEnoughMoneyException;
 
     Optional<Account> findById(Long id);
 

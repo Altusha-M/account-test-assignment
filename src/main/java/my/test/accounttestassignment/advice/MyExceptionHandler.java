@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class MyExceptionHandler {
 
-//    public ResponseEntity<String> notEnoughMoney(){
-//        return new ResponseEntity<String>("not_enough_money", HttpStatus.CONFLICT);
-//    }
     @ExceptionHandler(NotEnoughMoneyException.class)
-    public Exception notEnoughMoney(){
-        return new NotEnoughMoneyException("toss a coin");
+    public ResponseEntity<String> notEnoughMoney(){
+        return new ResponseEntity<String>("not_enough_money", HttpStatus.CONFLICT);
     }
+//    public Exception notEnoughMoney(){
+//        return new NotEnoughMoneyException("toss a coin");
+//    }
 }

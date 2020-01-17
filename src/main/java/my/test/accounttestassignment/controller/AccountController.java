@@ -1,7 +1,6 @@
 package my.test.accounttestassignment.controller;
 
 import my.test.accounttestassignment.entity.Account;
-import my.test.accounttestassignment.exception.NotEnoughMoneyException;
 import my.test.accounttestassignment.service.AccountService;
 import my.test.accounttestassignment.service.OperationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Rest API for my application for /api/account URI's
+ *
+ * @author m.altynov
+ */
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
@@ -25,6 +29,11 @@ public class AccountController {
         this.operationService = operationService;
     }
 
+    /**
+     * Returns list of all existing accounts or empty list if no one
+     *
+     * @return list of all existing accounts or empty list if no one
+     */
     @GetMapping
     public ResponseEntity<List<Account>> getAccount() {
         ResponseEntity<List<Account>> result = new ResponseEntity<List<Account>>(
@@ -33,6 +42,13 @@ public class AccountController {
         return result;
     }
 
+    /**
+     * Returns account with specified number and http 200 response code if account exists
+     * or account with null fields and http 404 response code if there is no account with specified number
+     *
+     * @param number specified number of account to return
+     * @return Account and HttpStatus.OK if exists or empty Account and HttpStatus.NOT_FOUND
+     */
     @GetMapping("/{number}")
     public ResponseEntity<Account> getAccount(@PathVariable String number) {
         Optional<Account> accountServiceById = accountService.findAccountByAccountNumber(number);
@@ -44,9 +60,10 @@ public class AccountController {
     }
 
     /**
+     * Creates new account in DB in response on POST
      *
-     * @param newAccount
-     * @return
+     * @param newAccount account without id
+     * @return 201 created response with created object of Account or empty Account
      */
     @PostMapping
     public ResponseEntity<Account> createAccount(@RequestBody Account newAccount) {
@@ -57,30 +74,48 @@ public class AccountController {
                 present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * @param amountToAdd   amount of money added to account with accountNumber
+     * @param accountNumber number of account to upgrade
+     * @return updated Account and 200 response code if update successfully or empty Account and 400 response code
+     */
     @PatchMapping("/{accountNumber}/credit/{amountToAdd}")
-    public Long updateCredit(@PathVariable String amountToAdd,
-                               @PathVariable String accountNumber) {
-        System.out.println(amountToAdd);
-
-        Long operationAnswer = accountService.credit(accountNumber, Long.parseLong(amountToAdd));
-        return operationAnswer;
+    public ResponseEntity<Account> updateCredit(@PathVariable String amountToAdd,
+                                                @PathVariable String accountNumber) {
+        Optional<Account> account;
+        synchronized (Account.class) {
+            account = accountService.credit(
+                    accountService.findAccountByAccountNumber(accountNumber).orElseGet(Account::new),
+                    Long.parseLong(amountToAdd)
+            );
+        }
+        boolean present = account.isPresent();
+        return new ResponseEntity<Account>(
+                present ? account.get() : new Account(),
+                present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST
+        );
     }
 
+    /**
+     * @param amountToRemove amount of money removed from account with accountNumber
+     * @param accountNumber  number of account to upgrade
+     * @return updated Account and 200 response code if update successfully or empty Account and 400 response code
+     */
     @PatchMapping("/{accountNumber}/debit/{amountToRemove}")
     public ResponseEntity<?> updateDebit(@PathVariable String amountToRemove,
-                               @PathVariable String accountNumber) {
-        System.out.println(amountToRemove);
-
-        Long operationAnswer;
-//        try {
-            operationAnswer = accountService.debit(accountNumber, Long.parseLong(amountToRemove));
-//        } catch (NotEnoughMoneyException e) {
-//            Account acc = new Account();
-//            acc.setAmount(-1);
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-        //TODO разобраться с ответом серверу тут и в credit
-        return new ResponseEntity<>(operationAnswer > 0 ? "{\"newAmount\": " + operationAnswer + "}" : "{\"newAmount\": -1}", HttpStatus.OK);
+                                         @PathVariable String accountNumber) {
+        Optional<Account> account;
+        synchronized (Account.class) {
+            account = accountService.debit(
+                    accountService.findAccountByAccountNumber(accountNumber).orElseGet(Account::new),
+                    Long.parseLong(amountToRemove)
+            );
+        }
+        boolean present = account.isPresent();
+        return new ResponseEntity<Account>(
+                present ? account.get() : new Account(),
+                present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST
+        );
     }
 
 }

@@ -29,6 +29,12 @@ public class Operation {
     @JoinColumn(name = "account_id")
     private Account account;
 
+    @Column
+    private Long amountBefore;
+
+    @Column
+    private Long amountAfter;
+
     public Long getId() {
         return id;
     }
@@ -63,5 +69,34 @@ public class Operation {
 
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    public Long getAmountBefore() {
+        return amountBefore;
+    }
+
+    public void setAmountBefore(Long amountBefore) {
+        this.amountBefore = amountBefore;
+    }
+
+    public Long getAmountAfter() {
+        return amountAfter;
+    }
+
+    public void setAmountAfter(Long amountAfter) {
+        this.amountAfter = amountAfter;
+    }
+
+    @Override
+    public String toString() {
+        return "Operation{" +
+                "id=" + id +
+                ", type='" + type + '\'' +
+                ", sum=" + sum +
+                ", dateTime=" + dateTime +
+                ", account=" + account +
+                ", amountBefore=" + amountBefore +
+                ", amountAfter=" + amountAfter +
+                '}';
     }
 }

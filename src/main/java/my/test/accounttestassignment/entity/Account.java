@@ -14,7 +14,6 @@ public class Account {
                         sequenceName = "account_id_seq",
                         allocationSize = 1)
     private Long id;
-//    @GeneratedValue(strategy = GenerationType.AUTO)
 
     @Column(nullable = false, unique = true)
     private String accountNumber;
@@ -65,8 +64,7 @@ public class Account {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return Objects.equals(id, account.id) &&
-                Objects.equals(accountNumber, account.accountNumber) &&
+        return Objects.equals(accountNumber, account.accountNumber) &&
                 Objects.equals(amount, account.amount);
     }
 

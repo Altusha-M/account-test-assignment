@@ -6,6 +6,8 @@ spring:
     platform: postgres
     initialization-mode: never
     driver-class-name: org.postgresql.Driver
+    hikari:
+      transaction-isolation: TRANSACTION_SERIALIZABLE
   jpa:
     database: postgresql
     hibernate:

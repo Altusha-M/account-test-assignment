@@ -5,6 +5,8 @@ import my.test.accounttestassignment.exception.NotEnoughMoneyException;
 import my.test.accounttestassignment.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,69 +27,94 @@ public class AccountServiceImpl implements AccountService {
     /**
      * Make cash in operation for account with given number.
      *
-     * @param accountNumber number of account which will deposit money
-     * @param amountToAdd   amount of money added to the {@code accountNumber}
+     * @param accountToCredit account which will deposit money
+     * @param amountToAdd     amount of money added to the {@code accountNumber}
      * @return Long amount of money after addition or -1L if there is no account with {@code accountNumber}
      */
     @Override
-    @Transactional
-    public Long credit(String accountNumber, Long amountToAdd) {
+    public Optional<Account> credit(Account accountToCredit, Long amountToAdd) {
 
+        String accountNumber = Optional.ofNullable(accountToCredit.getAccountNumber()).orElseGet(String::new);
         Optional<Account> optionalAccount = accountRepository.findByAccountNumber(accountNumber);
         boolean accountPresent = optionalAccount.isPresent();
 
         if (!accountPresent) {
-            return -1L;
+            return Optional.of(new Account());
         } else {
             Account account = optionalAccount.get();
-            Long newAmount = account.getAmount() + amountToAdd;
+            Long oldAmount = account.getAmount();
+            Long newAmount = oldAmount + amountToAdd;
             accountRepository.updateAccountAmountByNumber(accountNumber, newAmount);
-            operationService.save("credit", account, amountToAdd);
-            return newAmount;
+            accountToCredit.setAmount(newAmount);
+            accountToCredit = accountRepository.findByAccountNumber(accountNumber).orElseGet(Account::new);
+            operationService.save("credit", accountToCredit, amountToAdd,  oldAmount, newAmount);
+            return Optional.of(accountToCredit);
         }
     }
 
     /**
      * Make charge off operation for account with given number.
      *
-     * @param accountNumber  number of account which will withdraw money
+     * @param accountToDebit account which will withdraw money
      * @param amountToRemove amount of money added to the {@code accountNumber}
-     * @return Long amount of money after removing or -1L if there is no account with {@code accountNumber}
+     * @return account from db after update or new Account if there is no accountToDebit
      * @throws NotEnoughMoneyException if there is no enough money on given account
      */
     @Override
-    @Transactional
-    public Long debit(String accountNumber, Long amountToRemove) {
+    public Optional<Account> debit(Account accountToDebit, Long amountToRemove) {
 
-        Optional<Account> optionalAccount = accountRepository.findByAccountNumber(accountNumber);
+        try {
+            Thread.sleep(2500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        String accountNumber = Optional.ofNullable(accountToDebit.getAccountNumber()).orElseGet(String::new);
+        Optional<Account> optionalAccount;
+        optionalAccount = accountRepository.findByAccountNumber(accountNumber);
         boolean accountPresent = optionalAccount.isPresent();
 
         if (!accountPresent) {
-            return -1L;
+            return Optional.of(new Account());
         } else {
             Account account = optionalAccount.get();
             Long oldAmount = account.getAmount();
             if (oldAmount < amountToRemove) {
+                operationService.save("debitError", accountToDebit, amountToRemove, oldAmount, oldAmount);
                 throw new NotEnoughMoneyException("add more money before remove");
             }
             Long newAmount = oldAmount - amountToRemove;
-
+            accountToDebit.setAmount(newAmount);
             accountRepository.updateAccountAmountByNumber(accountNumber, newAmount);
-            operationService.save("debit", account, amountToRemove);
-            return newAmount;
+            accountToDebit = accountRepository.findByAccountNumber(accountNumber).orElseGet(Account::new);
+            operationService.save("debit", accountToDebit, amountToRemove, oldAmount, newAmount);
+            return Optional.of(accountToDebit);
         }
     }
 
+    /**
+     * @param id id of account
+     * @return Optional of Account if exists or empty Optional
+     */
     @Override
     public Optional<Account> findById(Long id) {
         return accountRepository.findById(id);
     }
 
+    /**
+     * @return all existing accounts
+     */
     @Override
     public List<Account> findAll() {
         return accountRepository.findAll();
     }
 
+    /**
+     * Finds account with specified number
+     *
+     * @param number number of account
+     * @return Optional of Account if exists or empty Optional
+     */
     @Override
     public Optional<Account> findAccountByAccountNumber(String number) {
         return accountRepository.findByAccountNumber(number);
@@ -95,20 +122,22 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * creates account in DB
+     *
      * @param account account which wanted to be create
      * @return created account or empty account if account with accountNumber already exists
      */
     @Override
     @Transactional
     public Optional<Account> save(Account account) {
-        if (accountRepository.findByAccountNumber(account.getAccountNumber()).isPresent() ){
+        if (accountRepository.findByAccountNumber(account.getAccountNumber()).isPresent()) {
             return Optional.of(new Account());
         }
         Long amountToCredit = account.getAmount();
-        account.setAmount(0L);
-        accountRepository.save(account);
-        this.credit(account.getAccountNumber(), amountToCredit);
-        return accountRepository.findByAccountNumber(account.getAccountNumber());
+//        account.setAmount(0L);
+        Account accountToSave = new Account(null, account.getAccountNumber(), 0L);
+        accountRepository.save(accountToSave);
+        this.credit(accountToSave, amountToCredit);
+        return accountRepository.findByAccountNumber(accountToSave.getAccountNumber());
     }
 
 

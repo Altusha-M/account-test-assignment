@@ -21,12 +21,14 @@ public class OperationServiceImpl implements OperationService {
     }
 
     @Override
-    public void save(String operationType, Account account, Long operationSum) {
+    public void save(String operationType, Account account, Long operationSum, Long amountBefore, Long amountAfter) {
         Operation operation = new Operation();
         operation.setType(operationType);
         operation.setAccount(account);
         operation.setDateTime(LocalDateTime.now());
         operation.setSum(operationSum);
+        operation.setAmountBefore(amountBefore);
+        operation.setAmountAfter(amountAfter);
         operationRepository.save(operation);
     }
 

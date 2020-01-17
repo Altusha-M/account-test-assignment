@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.*;
 
 /**
  * unit-testing of AccountService methods
+ *
  * @author m.altynov
  */
 class AccountServiceUnitTest {
@@ -27,6 +28,9 @@ class AccountServiceUnitTest {
     private OperationRepository operationRepository = Mockito.mock(OperationRepository.class);
     private AccountService accountService;
 
+    /**
+     * initializes services and specifies methods for mock's
+     */
     @BeforeEach
     void initAccountService() {
         OperationService operationService = new OperationServiceImpl(operationRepository);
@@ -35,18 +39,26 @@ class AccountServiceUnitTest {
         Mockito.doNothing()
                 .when(accountRepository)
                 .updateAccountAmountByNumber(account.getAccountNumber(), 0L);
+
         Mockito.when(accountRepository.findByAccountNumber(account.getAccountNumber()))
+                .thenReturn(Optional.of(account));
+
+        Mockito.when(accountRepository.findById(1L))
                 .thenReturn(Optional.of(account));
 
         Mockito.when(accountRepository.save(account))
                 .thenReturn(account);
     }
 
+    /**
+     * checks equality of expected and actual values if account doesn't exists and if exists
+     * after that checks number of calls methods inside the credit method
+     */
     @Test
     void creditTest() {
-        assertEquals(-1L, accountService.credit(anyString(), 50L));
+        assertEquals(Optional.of(new Account()), accountService.credit(new Account(), 50L));
 
-        assertEquals(100L, accountService.credit(account.getAccountNumber(), 50L));
+        assertEquals(Optional.of(account), accountService.credit(account, 50L));
 
         Mockito.verify(accountRepository, Mockito.times(1))
                 .updateAccountAmountByNumber(anyString(), anyLong());
@@ -54,11 +66,16 @@ class AccountServiceUnitTest {
                 .save(any(Operation.class));
     }
 
+
+    /**
+     * checks equality of expected and actual values if account doesn't exists and if exists
+     * after that checks number of calls methods inside the debit method
+     */
     @Test
     void debitTest() {
-        assertEquals(-1L, accountService.debit(anyString(), 50L));
+        assertEquals(Optional.of(new Account()), accountService.debit(new Account(), 50L));
 
-        assertEquals(0L, accountService.debit(account.getAccountNumber(), 50L));
+        assertEquals(Optional.of(account), accountService.debit(account, 50L));
 
         Mockito.verify(accountRepository, Mockito.times(1))
                 .updateAccountAmountByNumber(anyString(), anyLong());
@@ -66,16 +83,25 @@ class AccountServiceUnitTest {
                 .save(any(Operation.class));
     }
 
+    /**
+     * checks equality of expected and actual values if account doesn't exists and if exists
+     * after that checks number of calls methods inside this method
+     */
     @Test
     void findByIdTest() {
+        assertEquals(Optional.empty(), accountService.findById(3L));
 
-        assertEquals(Optional.empty(), accountService.findById(1L));
-        Mockito.verify(accountRepository, Mockito.times(1))
+        assertEquals(Optional.of(account), accountService.findById(1L));
+
+        Mockito.verify(accountRepository, Mockito.times(2))
                 .findById(anyLong());
-
-
     }
 
+
+    /**
+     * checks equality of expected and actual values if account doesn't exists and if exists
+     * after that checks number of calls methods inside this method
+     */
     @Test
     void findAllTest() {
         assertEquals(new ArrayList<>(), accountService.findAll());
@@ -85,26 +111,30 @@ class AccountServiceUnitTest {
                 .findAll();
     }
 
+    /**
+     * checks equality of expected and actual values if account doesn't exists and if exists
+     * after that checks number of calls methods inside this method
+     */
     @Test
     void findAccountByAccountNumberTest() {
-
         assertEquals(Optional.empty(), accountService.findAccountByAccountNumber("1234"));
+        assertEquals(Optional.of(account), accountService.findAccountByAccountNumber("12345"));
 
-        Mockito.verify(accountRepository, Mockito.times(1))
+        Mockito.verify(accountRepository, Mockito.times(2))
                 .findByAccountNumber(anyString());
-
     }
 
+    /**
+     * checks equality of expected and actual values
+     * after that checks number of calls methods inside this method
+     */
     @Test
     void saveTest() {
-        assertEquals(Optional.of(new Account()), accountService.save(account));
-        Account accountToSave = new Account(2L, "123", 100L);
-
-        Mockito.when(accountRepository.findByAccountNumber(accountToSave.getAccountNumber()))
+        Mockito.when(accountRepository.findByAccountNumber(account.getAccountNumber()))
                 .thenReturn(Optional.empty())
-                .thenReturn(Optional.of(accountToSave));
-        Optional<Account> savedAccount = accountService.save(accountToSave);
-        assertEquals(accountToSave, savedAccount.orElseGet(Account::new));
+                .thenReturn(Optional.of(account));
+        Optional<Account> savedAccount = accountService.save(account);
+        assertEquals(account, savedAccount.orElseGet(Account::new));
     }
 
 }

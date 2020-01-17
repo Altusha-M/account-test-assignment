@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface OperationService {
 
-    void save(String methodName, Account account, Long operationSum);
+    void save(String operationType, Account account, Long operationSum, Long amountBefore, Long amountAfter);
 
     List<Operation> getAllOperation();
 
