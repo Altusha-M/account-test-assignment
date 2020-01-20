@@ -9,10 +9,10 @@ public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO,
-                    generator = "pk_account_sequence")
+            generator = "pk_account_sequence")
     @SequenceGenerator(name = "pk_account_sequence",
-                        sequenceName = "account_id_seq",
-                        allocationSize = 1)
+            sequenceName = "account_id_seq",
+            allocationSize = 1)
     private Long id;
 
     @Column(nullable = false, unique = true)

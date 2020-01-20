@@ -21,11 +21,22 @@ public class OperationController {
         this.operationService = operationService;
     }
 
+    /**
+     * get all saved operations
+     *
+     * @return List of all operations
+     */
     @GetMapping
     public List<Operation> getOperation() {
         return operationService.getAllOperation();
     }
 
+    /**
+     * Gets all operation with accountNumber
+     *
+     * @param accountNumber number of interested account
+     * @return List of operations by specified account
+     */
     @GetMapping("/{accountNumber}")
     public List<Operation> getOperation(@PathVariable String accountNumber) {
         return operationService.getOperationByAccountNumber(accountNumber);

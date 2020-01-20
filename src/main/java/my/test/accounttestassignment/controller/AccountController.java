@@ -112,6 +112,7 @@ public class AccountController {
             );
         }
         boolean present = account.isPresent();
+
         return new ResponseEntity<Account>(
                 present ? account.get() : new Account(),
                 present ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST

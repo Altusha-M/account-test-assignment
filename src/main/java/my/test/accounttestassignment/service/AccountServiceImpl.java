@@ -5,8 +5,6 @@ import my.test.accounttestassignment.exception.NotEnoughMoneyException;
 import my.test.accounttestassignment.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -32,6 +30,7 @@ public class AccountServiceImpl implements AccountService {
      * @return Long amount of money after addition or -1L if there is no account with {@code accountNumber}
      */
     @Override
+    @Transactional
     public Optional<Account> credit(Account accountToCredit, Long amountToAdd) {
 
         String accountNumber = Optional.ofNullable(accountToCredit.getAccountNumber()).orElseGet(String::new);
@@ -47,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
             accountRepository.updateAccountAmountByNumber(accountNumber, newAmount);
             accountToCredit.setAmount(newAmount);
             accountToCredit = accountRepository.findByAccountNumber(accountNumber).orElseGet(Account::new);
-            operationService.save("credit", accountToCredit, amountToAdd,  oldAmount, newAmount);
+            operationService.save("credit", accountToCredit, amountToAdd, oldAmount, newAmount);
             return Optional.of(accountToCredit);
         }
     }
@@ -61,6 +60,7 @@ public class AccountServiceImpl implements AccountService {
      * @throws NotEnoughMoneyException if there is no enough money on given account
      */
     @Override
+    @Transactional
     public Optional<Account> debit(Account accountToDebit, Long amountToRemove) {
 
         try {
@@ -121,10 +121,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     /**
-     * creates account in DB
+     * creates account in DB and creates first credit operation on this account
      *
      * @param account account which wanted to be create
-     * @return created account or empty account if account with accountNumber already exists
+     * @return Optional of created account or empty account if account with accountNumber already exists
      */
     @Override
     @Transactional
@@ -133,7 +133,6 @@ public class AccountServiceImpl implements AccountService {
             return Optional.of(new Account());
         }
         Long amountToCredit = account.getAmount();
-//        account.setAmount(0L);
         Account accountToSave = new Account(null, account.getAccountNumber(), 0L);
         accountRepository.save(accountToSave);
         this.credit(accountToSave, amountToCredit);

@@ -1,7 +1,6 @@
 package my.test.accounttestassignment.entity;
 
 import javax.persistence.*;
-import javax.websocket.ClientEndpoint;
 import java.time.LocalDateTime;
 
 @Entity
